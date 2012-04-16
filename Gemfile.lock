@@ -26,10 +26,10 @@ GEM
     addressable (2.2.7)
     builder (3.0.0)
     coderay (1.0.5)
-    couch_potato (0.5.7)
+    couch_potato (0.6.0)
       activemodel
       couchrest (>= 1.0.1)
-      json
+      json (~> 1.6.0)
     couchrest (1.0.1)
       json (>= 1.4.6)
       mime-types (>= 1.15)
@@ -62,7 +62,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  couch_potato
+  couch_potato (= 0.6.0)
   elasticsearch-node
   eson!
   pry
