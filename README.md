@@ -22,19 +22,6 @@ CouchPotato.database.search { query { match_all { } } }
 Indexing as an after-save hook:
 
 ```ruby
-class Post
-  include CouchPotato::Persistence
-  include Eson::Searchable
-
-  property :title
-end
-
-p = Post.new(:title => 'foobar')
-CouchPotato.database.index_document(p)
-CouchPotato.database.search { query { match_all { } } }
-```
-
-```ruby
 class WithAfterHook
   include CouchPotato::Persistence
   include Eson::Searchable
