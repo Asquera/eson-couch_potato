@@ -1,5 +1,12 @@
 require 'eson'
 
+# revert symbol monkeypatch
+class Symbol
+  def as_json(*)
+    to_s
+  end
+end
+
 module Eson
   module CouchPotato
     module Database
@@ -53,6 +60,13 @@ module Eson
           array.extend SearchResults
           array.results = result
         end
+      end
+      
+      def register_template(name, match = "*", models = CouchPotato.models, settings = nil)
+        elasticsearch_client.put_template :template => match,
+                                          :mappings => Array(models).inject({}) { |mappings, m| mappings.merge(m.to_mapping) },
+                                          :settings => settings,
+                                          :name     => name
       end
     end
   end
@@ -114,6 +128,8 @@ module Eson
 
             options
           end
+          
+          mapping[JSON.create_id] = {:type => :string}
           
           mapping
         end

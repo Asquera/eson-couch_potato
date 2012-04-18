@@ -126,7 +126,8 @@ context "Simple document mapping" do
     :title => { :type => :string, :index => :not_analyzed },
     :tags => { :type => :string },
     :created_at => { :type => :date },
-    :updated_at => { :type => :date }
+    :updated_at => { :type => :date },
+    JSON.create_id => { :type => :string }
   })
   
   asserts(:to_mapping).equals "Nested" => { :properties => Nested.to_mapping_properties }
@@ -147,8 +148,36 @@ context "Complex Document mapping" do
          :title => { :type => :string, :index => :not_analyzed },
          :tags => { :type => :string },
          :created_at => { :type => :date },
-         :updated_at => { :type => :date }
+         :updated_at => { :type => :date },
+         JSON.create_id => { :type => :string }
       }
-    }
+    },
+    JSON.create_id => { :type => :string }
   )
+end
+
+context "Templates" do
+  helper(:parent_with_nested) do
+    Parent.new :title => "parent", :nested => Nested.new(:title => "nested", :tags => %w(very cool))
+  end
+  
+  setup do
+    CouchPotato.database.elasticsearch_client.delete(:index => "_all")
+    CouchPotato.database.elasticsearch_client.delete_template(:name => "test") rescue nil
+    CouchPotato.database.register_template("test", "eson*", Parent)
+    CouchPotato.database.index_document(parent_with_nested)
+    CouchPotato.database.elasticsearch_client.refresh
+  end
+  
+  asserts("nested search results lengths") do
+    CouchPotato.database.search do
+      query {
+        nested(:path => :nested, :score_mode => "avg"){
+          query {
+            term :tags, :value => "very"
+          }
+        }
+      }
+    end.length
+  end.equals(1)
 end
