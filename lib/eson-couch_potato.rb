@@ -92,7 +92,7 @@ module Eson
     end
     
     module ClassMethods
-      def to_mapping
+      def to_mapping_properties
         self.properties.list.inject({}) do |mapping, property|
           
           mapping[property.name] = begin
@@ -119,9 +119,12 @@ module Eson
         end
       end
       
+      def to_mapping
+        { name => {:properties => to_mapping_properties }}
+      end
+      
       def map_child_type(type)
-        puts type
-        {:type => :nested, :properties => type.to_mapping }
+        {:type => :nested, :properties => type.to_mapping_properties }
       end
     end
   end

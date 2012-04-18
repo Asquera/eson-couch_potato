@@ -122,12 +122,14 @@ context "Simple document mapping" do
     Nested
   end
   
-  asserts(:to_mapping).equals({
+  asserts(:to_mapping_properties).equals({
     :title => { :type => :string, :index => :not_analyzed },
     :tags => { :type => :string },
     :created_at => { :type => :date },
     :updated_at => { :type => :date }
   })
+  
+  asserts(:to_mapping).equals "Nested" => { :properties => Nested.to_mapping_properties }
 end
 
 context "Complex Document mapping" do
@@ -135,7 +137,7 @@ context "Complex Document mapping" do
     Parent
   end
   
-  asserts(:to_mapping).equals(
+  asserts(:to_mapping_properties).equals(
     :title => { :type => :string },
     :created_at => { :type => :date }, 
     :updated_at => { :type => :date },
