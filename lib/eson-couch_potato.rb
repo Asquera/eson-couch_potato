@@ -14,13 +14,18 @@ module Eson
         Eson::HTTP::Client.new(:default_index => couchrest_database.name)
       end
       
-      def index_document(doc_or_options)
+      def index_document(doc_or_options, opts = {})
         case doc_or_options
         when Hash
           elasticsearch_client.index(doc_or_options)["ok"]
         else
-          response = elasticsearch_client.index(:type => doc_or_options.class.name, 
-                                                :doc => doc_or_options.to_hash)
+          opts.merge!(:type => doc_or_options.class.name, 
+                      :doc => doc_or_options.to_hash)
+          
+          opts[:id] = doc_or_options.id if doc_or_options.id
+          
+          response = elasticsearch_client.index(opts)
+
           doc_or_options._id      = response["_id"]      unless doc_or_options._id
           doc_or_options._version = response["_version"] unless doc_or_options._version
           
@@ -35,10 +40,34 @@ module Eson
         )
       end
       
-      def more_like_this(opts = {})
+      def more_like_this(doc, opts = {})
+        opts.merge!(:id => doc.id,
+                    :type => doc.class.name)
+
         parse_elasticsearch_result(
           elasticsearch_client.more_like_this(opts)
         )
+      end
+      
+      def create_percolator(opts = {}, &block)
+        index = opts.delete(:index) || elasticsearch_client.default_index
+        type  = opts.delete(:type) || opts.delete(:name)
+
+        query = Eson::Search::BaseQuery.new(&block)
+        doc = opts.merge(query.to_query_hash)
+        elasticsearch_client.index(:index => "_percolator",
+                                   :type => index,
+                                   :id => type,
+                                   :doc => doc)
+      end
+      
+      def percolate(doc, opts = {}, &block)
+        index = opts.delete(:index) || elasticsearch_client.default_index
+        
+        elasticsearch_client.percolate(:index => index,
+                                       :type => doc.class.name,
+                                       :doc => doc.to_hash,
+                                       &block)
       end
       
       def parse_elasticsearch_result(result)
@@ -95,17 +124,23 @@ module Eson
     end
     
     def index(opts = {})
-      database.index_document opts.merge(:id => self.id,
-                                         :type => self.class.name,
-                                         :doc => self.to_hash)
+      database.index_document self, opts
     end
     
     def more_like_this(opts = {})
-      database.more_like_this opts.merge(:id => self.id,
-                                         :type => self.class.name)
+      database.more_like_this self, opts
+    end
+    
+    def percolate(opts = {})
+      database.percolate self, opts
+    end
+    
+    def percolate_into(attribute, opts = {})
+      self.send "#{attribute}=", percolate(opts = {})["matches"]
     end
     
     module ClassMethods
+
       def to_mapping_properties
         self.properties.list.inject({}) do |mapping, property|
           

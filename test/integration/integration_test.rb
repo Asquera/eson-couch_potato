@@ -181,3 +181,47 @@ context "Templates" do
     end.length
   end.equals(1)
 end
+
+
+class WithPercolateHook
+  include CouchPotato::Persistence
+  include Eson::Searchable
+  
+  before_save do
+    percolate_into :tags
+  end
+  
+  property :title
+  property :tags
+end
+
+context "Percolation" do
+  setup do
+    CouchPotato.database.create_percolator(:type => "foo") do
+      query {
+        term :title, :value => "foobar"
+      }
+    end
+  end
+  
+  asserts("percolation matches") do
+    p = Post.new(:title => "foobar")
+    CouchPotato.database.percolate(p)["matches"]
+  end.equals(%w(foo))
+end
+
+context "Percolation with before_save hook" do
+  setup do
+    CouchPotato.database.create_percolator(:type => "bar") do
+      query {
+        term :title, :value => "barfoo"
+      }
+    end
+    
+    w = WithPercolateHook.new(:title => "barfoo")
+    CouchPotato.database.save_document w
+    w
+  end
+  
+  asserts(:tags).equals(%w(bar))
+end
