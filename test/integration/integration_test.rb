@@ -100,3 +100,32 @@ context "More Like This" do
     asserts(:_index).equals { 'eson-test' }
   end
 end
+
+class Nested
+  include CouchPotato::Persistence
+  include Eson::Searchable
+
+  property :title, :type => String, :index => :not_analyzed
+  property :tags, :type => Array, :default => []
+end
+
+class Parent
+  include CouchPotato::Persistence
+  include Eson::Searchable
+
+  property :title, :type => String
+  property :nested, :type => Nested
+end
+
+context "#to_mapping" do
+  setup do
+    Nested
+  end
+  
+  asserts(:to_mapping).equals({
+    :title => { :type => :string, :index => :not_analyzed },
+    :tags => { :type => :string },
+    :created_at => { :type => :date },
+    :updated_at => { :type => :date }
+  })
+end

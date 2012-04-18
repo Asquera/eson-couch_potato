@@ -76,6 +76,10 @@ module Eson
   module Searchable
     include SearchResult
     
+    def self.included(base)
+      base.extend(ClassMethods)
+    end
+    
     def index(opts = {})
       database.index_document opts.merge(:id => self.id,
                                          :type => self.class.name,
@@ -86,9 +90,46 @@ module Eson
       database.more_like_this opts.merge(:id => self.id,
                                          :type => self.class.name)
     end
+    
+    module ClassMethods
+      def to_mapping
+        self.properties.list.inject({}) do |mapping, property|
+          mapping[property.name] = begin
+            options = if property.type == String
+                        {:type => :string}
+                      elsif property.type == Array
+                        {:type => :string}
+                      elsif property.type == Time
+                        {:type => :date}
+                      end
+
+            property.options.each do |k,v|
+              unless [:type, :default].include?(k)
+                options[k] = v
+              end
+            end
+
+            options
+          end
+          
+          mapping
+        end
+      end
+    end
   end
 end
 
 class CouchPotato::Database
   include Eson::CouchPotato::Database
+end
+
+class CouchPotato::Persistence::SimpleProperty
+  attr_reader :options
+  
+  alias :old_initialize :initialize
+  
+  def initialize(owner_clazz, name, options = {})
+    @options = options
+    old_initialize(owner_clazz, name, options)
+  end
 end
