@@ -117,7 +117,7 @@ class Parent
   property :nested, :type => Nested
 end
 
-context "#to_mapping" do
+context "Simple document mapping" do
   setup do
     Nested
   end
@@ -128,4 +128,25 @@ context "#to_mapping" do
     :created_at => { :type => :date },
     :updated_at => { :type => :date }
   })
+end
+
+context "Complex Document mapping" do
+  setup do
+    Parent
+  end
+  
+  asserts(:to_mapping).equals(
+    :title => { :type => :string },
+    :created_at => { :type => :date }, 
+    :updated_at => { :type => :date },
+    :nested => {
+      :type => :nested,
+      :properties => {
+         :title => { :type => :string, :index => :not_analyzed },
+         :tags => { :type => :string },
+         :created_at => { :type => :date },
+         :updated_at => { :type => :date }
+      }
+    }
+  )
 end

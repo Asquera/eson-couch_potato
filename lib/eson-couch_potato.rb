@@ -94,6 +94,7 @@ module Eson
     module ClassMethods
       def to_mapping
         self.properties.list.inject({}) do |mapping, property|
+          
           mapping[property.name] = begin
             options = if property.type == String
                         {:type => :string}
@@ -101,6 +102,8 @@ module Eson
                         {:type => :string}
                       elsif property.type == Time
                         {:type => :date}
+                      elsif property.type.ancestors.include?(::CouchPotato::Persistence)
+                        map_child_type(property.type)
                       end
 
             property.options.each do |k,v|
@@ -114,6 +117,11 @@ module Eson
           
           mapping
         end
+      end
+      
+      def map_child_type(type)
+        puts type
+        {:type => :nested, :properties => type.to_mapping }
       end
     end
   end
