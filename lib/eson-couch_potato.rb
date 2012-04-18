@@ -140,7 +140,17 @@ module Eson
     end
     
     module ClassMethods
-
+      def search(name, opts = {}, &block)
+        meta = class << self; self; end
+        
+        meta.class_eval do
+          define_method(name) do |*args|
+            opts[:type] = self.name
+            opts.merge(Eson::Search::BaseQuery.new(*args, &block).to_query_hash)
+          end
+        end
+      end
+      
       def to_mapping_properties
         self.properties.list.inject({}) do |mapping, property|
           

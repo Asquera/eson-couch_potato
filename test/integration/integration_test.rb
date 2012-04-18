@@ -182,7 +182,6 @@ context "Templates" do
   end.equals(1)
 end
 
-
 class WithPercolateHook
   include CouchPotato::Persistence
   include Eson::Searchable
@@ -224,4 +223,39 @@ context "Percolation with before_save hook" do
   end
   
   asserts(:tags).equals(%w(bar))
+end
+
+class WithPredefinedSearch
+  include CouchPotato::Persistence
+  include Eson::Searchable
+  
+  property :title
+  property :tags
+  
+  search :search_tags do
+    query {
+      term :tags, :value => param(:tag)
+    }
+  end
+end
+
+context "Predefined Searches" do
+  setup do
+    p = WithPredefinedSearch.new(:title => "foobar", :tags => %w(cool stuff))
+    CouchPotato.database.index_document(p)
+    CouchPotato.database.elasticsearch_client.refresh
+    CouchPotato.database.search WithPredefinedSearch.search_tags(:tag => "cool")
+  end
+  
+  asserts(:results).kind_of?(Hash)
+  
+  context "result" do
+    setup do
+      topic.first
+    end
+    
+    asserts(:database).equals { CouchPotato.database }
+    asserts(:_type).equals { 'WithPredefinedSearch' }
+    asserts(:_index).equals { 'eson-test' }
+  end
 end
