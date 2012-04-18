@@ -65,6 +65,16 @@ context "Saving a document with after_save indexing" do
   asserts("can be retrieved using the same id") do
     CouchPotato.database.elasticsearch_client.get :type => "WithAfterHook", :id => topic.id
   end
+  
+  context "> retrieved object" do
+    setup do
+      CouchPotato.database.elasticsearch_client.get(:type => "WithAfterHook", :id => topic.id)["_source"]
+    end
+
+    denies(:new?)
+    denies(:dirty?)
+    
+  end
 end
 
 context "More Like This" do
