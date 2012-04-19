@@ -14,6 +14,36 @@ module Eson
         Eson::HTTP::Client.new(:default_index => couchrest_database.name)
       end
       
+      def start_river(filter = nil)
+        uri = Addressable::URI.parse(couchrest_database.host)
+        doc = {
+          :type => :couchdb,
+          :couchdb => {
+            :host => uri.host,
+            :port => uri.port,
+            :db => couchrest_database.name,
+            :filter => filter,
+            :script => "ctx._type = ctx.doc.#{JSON.create_id}"
+          },
+          :index => {
+            :index => couchrest_database.name,
+            :bulk_size => "100",
+            :bulk_timeout => "10ms"
+          }
+        }
+                
+        elasticsearch_client.index(:index => "_river",
+                                   :type => couchrest_database.name,
+                                   :id => "_meta",
+                                   :doc => doc)
+      end
+      
+      def stop_river
+        elasticsearch_client.delete(:index => "_river",
+                                    :type => couchrest_database.name,
+                                    :id => "_meta")
+      end
+      
       def index_document(doc_or_options, opts = {})
         case doc_or_options
         when Hash
@@ -72,6 +102,7 @@ module Eson
       
       def parse_elasticsearch_result(result)
         hits = result["hits"]["hits"]
+        
         docs = hits.map do |hit|
           hit['_source'].tap do |source|
             source.database = self if source.respond_to? :database

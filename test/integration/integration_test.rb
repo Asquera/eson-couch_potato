@@ -259,3 +259,20 @@ context "Predefined Searches" do
     asserts(:_index).equals { 'eson-test' }
   end
 end
+
+context "River" do
+  setup do
+    CouchPotato.database.elasticsearch_client.delete(:index => "_all")
+    CouchPotato.database.start_river
+    p = Post.new(:title => "foobar")
+    CouchPotato.database.save_document(p)
+    sleep 3 # rivers need a second to start
+    CouchPotato.database.elasticsearch_client.get(:type => "Post", :id => p.id)["_source"]
+  end
+  
+  teardown do
+    CouchPotato.database.stop_river
+  end
+  
+  asserts(:class).equals(Post)
+end

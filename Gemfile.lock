@@ -34,7 +34,7 @@ GEM
       json (>= 1.4.6)
       mime-types (>= 1.15)
       rest-client (>= 1.5.1)
-    elasticsearch-node (0.7.0)
+    elasticsearch-node (0.7.1)
     faraday (0.7.6)
       addressable (~> 2.2)
       multipart-post (~> 1.1)
