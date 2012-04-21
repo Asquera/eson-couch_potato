@@ -123,7 +123,7 @@ end
 Parent.to_mapping # { "Parent" => {:properties => {:title => .... }}}
 ```
 
-Nested documents will be indexed as nested documents.
+Nested documents will be indexed using the native `nested` type in ElasticSearch. This is currently not configurable.
 
 Mappings can be published as ElasticSearch templates, which is recommendable:
 
@@ -145,3 +145,8 @@ CouchPotato.database.stop_river
 ```
 
 It needs the `river-couchdb` and `lang-javascript` plugins.
+
+## Remarks
+
+For compatibility reasons, Eson::CouchPotato deactivates `json/add/symbol`. If you rely on its behaviour, file a bug and I will see whether I can fix that.
+
