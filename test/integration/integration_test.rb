@@ -1,15 +1,18 @@
 require './test/test_config'
+require 'eson/couch_potato/rivers'
+require 'eson/couch_potato/mapping'
+require 'eson/couch_potato/percolation'
 
 class Post
   include CouchPotato::Persistence
-  include Eson::Searchable
+  include Eson::CouchPotato::Searchable
   
   property :title
 end
 
 class WithAfterHook
   include CouchPotato::Persistence
-  include Eson::Searchable
+  include Eson::CouchPotato::Searchable
   
   after_save :index
   
@@ -103,7 +106,7 @@ end
 
 class Nested
   include CouchPotato::Persistence
-  include Eson::Searchable
+  include Eson::CouchPotato::Searchable
 
   property :title, :type => String, :index => :not_analyzed
   property :tags, :type => Array, :default => []
@@ -111,7 +114,7 @@ end
 
 class Parent
   include CouchPotato::Persistence
-  include Eson::Searchable
+  include Eson::CouchPotato::Searchable
 
   property :title, :type => String
   property :nested, :type => Nested
@@ -184,7 +187,7 @@ end
 
 class WithPercolateHook
   include CouchPotato::Persistence
-  include Eson::Searchable
+  include Eson::CouchPotato::Searchable
   
   before_save do
     percolate_into :tags
@@ -227,7 +230,7 @@ end
 
 class WithPredefinedSearch
   include CouchPotato::Persistence
-  include Eson::Searchable
+  include Eson::CouchPotato::Searchable
   
   property :title
   property :tags
