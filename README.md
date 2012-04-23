@@ -57,6 +57,23 @@ end
 CouchPotato.database.search User.by_name(:name => "eson")
 ```
 
+## MoreLikeThis
+
+MoreLikeThis queries are easy as well:
+
+```ruby
+class Post
+  include CouchPotato::Persistence
+  include Eson::CouchPotato::Searchable
+
+  property :title
+end
+
+p = Post.new(:title => 'foobar')
+CouchPotato.database.index_document(p)
+p.more_like_this
+```
+
 ## Percolation
 
 Eson::CouchPotato has an integration into the Percolation API:
