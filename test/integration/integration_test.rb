@@ -112,6 +112,14 @@ class Nested
   property :tags, :type => Array, :default => [], :index_type => String
 end
 
+class SimilarNested
+  include CouchPotato::Persistence
+  include Eson::CouchPotato::Searchable
+
+  property :title, :type => String, :index => :not_analyzed
+  property :place, :type => String
+end
+
 class Parent
   include CouchPotato::Persistence
   include Eson::CouchPotato::Searchable
@@ -124,7 +132,7 @@ class ParentWithNestedArray
   include CouchPotato::Persistence
   include Eson::CouchPotato::Searchable
   
-  property :nested, :type => Array, :nested_type => Nested
+  property :nested, :type => Array, :nested_type => [Nested, SimilarNested]
 end
 
 context "Simple document mapping" do
@@ -179,6 +187,7 @@ context "ParentWithNestedArray" do
       :properties => {
          :title => { :type => :string, :index => :not_analyzed },
          :tags => { :type => :string },
+         :place => { :type => :string },
          :created_at => { :type => :date },
          :updated_at => { :type => :date },
          JSON.create_id => { :type => :string }

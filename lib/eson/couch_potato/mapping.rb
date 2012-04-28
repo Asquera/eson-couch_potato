@@ -50,7 +50,15 @@ module Eson
           end
           
           if property.options[:nested_type]
-            mapping[:properties] = property.options[:nested_type].to_mapping_properties
+            mapping[:properties] = Array(property.options[:nested_type]).inject({}) do |props, type|
+              type_properties = type.to_mapping_properties
+              
+              (props.keys & type_properties.keys).each do |key|
+                raise "Conflicting types on key #{key}" unless type_properties[key] == props[key]
+              end
+              
+              props.merge type_properties 
+            end
           end
           
           mapping
