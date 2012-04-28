@@ -119,7 +119,7 @@ p.tags #=> ["foo"]
 Eson::CouchPotato can generate ElasticSearch-Mappings for you. Some costumization is allowed, though very complex mappings should be written by hand by implementing ``#to_mapping_properties`` on your own:
 
 ```ruby
-require 'eson/couch_potato/mappings'
+require 'eson/couch_potato/mapping'
 
 class Nested
   include CouchPotato::Persistence
