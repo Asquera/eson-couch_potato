@@ -78,7 +78,7 @@ module Eson
           if type == String
             {:type => :string}
           elsif type == Time
-            {:type => :date}
+            {:type => :date, :format => "yyyy/MM/dd HH:mm:ss Z"}
           end
         end
       end
