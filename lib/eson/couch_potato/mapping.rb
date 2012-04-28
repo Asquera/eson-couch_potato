@@ -17,18 +17,10 @@ module Eson
           self.properties.list.inject({}) do |mapping, property|
             
             mapping[property.name] = begin
-              options = if property.type == String
-                          {:type => :string}
-                        elsif property.type == Array
-                          {:type => :string}
-                        elsif property.type == Time
-                          {:type => :date}
-                        elsif property.type.ancestors.include?(::CouchPotato::Persistence)
-                          map_child_type(property.type)
-                        end
+              options = property_to_mapping(property)
 
               property.options.each do |k,v|
-                unless [:type, :default].include?(k)
+                unless [:type, :default, :index_type, :nested_type].include?(k)
                   options[k] = v
                 end
               end
@@ -46,8 +38,40 @@ module Eson
           { name => {:properties => to_mapping_properties }}
         end
 
-        def map_child_type(type)
-          {:type => :nested, :properties => type.to_mapping_properties }
+        def map_child_type(property)
+          {:type => (property.options[:index_type] || :nested), :properties => property.type.to_mapping_properties }
+        end
+        
+        def map_array(property)
+          if property.options[:index_type]
+            mapping = type_to_mapping(property.options[:index_type])
+          else
+            mapping = {:type => :nested}
+          end
+          
+          if property.options[:nested_type]
+            mapping[:properties] = property.options[:nested_type].to_mapping_properties
+          end
+          
+          mapping
+        end
+        
+        def property_to_mapping(property)
+          if property.type == Array
+            map_array(property)                          
+          elsif property.type.ancestors.include?(::CouchPotato::Persistence)
+            map_child_type(property)
+          else
+            type_to_mapping(property.type)
+          end
+        end
+        
+        def type_to_mapping(type)
+          if type == String
+            {:type => :string}
+          elsif type == Time
+            {:type => :date}
+          end
         end
       end
     end
