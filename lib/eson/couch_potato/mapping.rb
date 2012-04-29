@@ -39,7 +39,7 @@ module Eson
         end
 
         def map_child_type(property)
-          {:type => (property.options[:index_type] || :nested), :properties => property.type.to_mapping_properties }
+          {:type => (property.options[:index_type] || :object), :properties => property.type.to_mapping_properties }
         end
         
         def map_array(property)
