@@ -125,7 +125,7 @@ class Parent
   include Eson::CouchPotato::Searchable
 
   property :title, :type => String
-  property :nested, :type => Nested
+  property :nested, :type => Nested, :index_type => :nested
 end
 
 class ParentWithNestedArray
@@ -143,8 +143,8 @@ context "Simple document mapping" do
   asserts(:to_mapping_properties).equals({
     :title => { :type => :string, :index => :not_analyzed },
     :tags => { :type => :string },
-    :created_at => { :type => :date },
-    :updated_at => { :type => :date },
+    :created_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" },
+    :updated_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" },
     JSON.create_id => { :type => :string }
   })
   
@@ -158,15 +158,15 @@ context "Complex Document mapping" do
   
   asserts(:to_mapping_properties).equals(
     :title => { :type => :string },
-    :created_at => { :type => :date }, 
-    :updated_at => { :type => :date },
+    :created_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" }, 
+    :updated_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" },
     :nested => {
       :type => :nested,
       :properties => {
          :title => { :type => :string, :index => :not_analyzed },
          :tags => { :type => :string },
-         :created_at => { :type => :date },
-         :updated_at => { :type => :date },
+         :created_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" },
+         :updated_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" },
          JSON.create_id => { :type => :string }
       }
     },
@@ -180,16 +180,16 @@ context "ParentWithNestedArray" do
   end
   
   asserts(:to_mapping_properties).equals(
-    :created_at => { :type => :date }, 
-    :updated_at => { :type => :date },
+    :created_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" }, 
+    :updated_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" },
     :nested => {
       :type => :nested,
       :properties => {
          :title => { :type => :string, :index => :not_analyzed },
          :tags => { :type => :string },
          :place => { :type => :string },
-         :created_at => { :type => :date },
-         :updated_at => { :type => :date },
+         :created_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" },
+         :updated_at => { :type => :date, :format=>"yyyy/MM/dd HH:mm:ss Z" },
          JSON.create_id => { :type => :string }
       }
     },
